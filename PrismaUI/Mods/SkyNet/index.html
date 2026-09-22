@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SkyNet Browser</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="nav-bar">
+    <button id="btn-back">◄</button>
+    <button id="btn-forward">►</button>
+    <button id="btn-reload">↻</button>
+    <input type="text" id="url-bar" placeholder="Enter URL or search term..." />
+    <button id="btn-go">Go</button>
+    <button id="btn-close" class="danger">✕ Close</button>
+  </div>
+
+  <main id="browser-content">
+    <div id="browser-status" role="status">
+      <strong>SkyNet Browser</strong>
+      <span>Enter a full URL, such as https://example.com.</span>
+    </div>
+    <iframe id="web-viewport" title="SkyNet web content" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

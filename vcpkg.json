@@ -1,0 +1,21 @@
+{
+  "name": "skynet-browser",
+  "version-string": "1.0.1",
+  "description": "SkyNet in-game browser SKSE plugin for Skyrim Special Edition.",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "directxmath",
+    "directxtk",
+    "fmt",
+    "nlohmann-json",
+    "openssl",
+    "rapidcsv",
+    "simpleini",
+    "spdlog",
+    "toml11",
+    "xbyak"
+  ]
+}
