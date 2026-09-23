@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>About SkyNet</title>
+  <style>
+    :root { color-scheme: dark; font-family: "Segoe UI", sans-serif; }
+    html, body { min-height: 100%; margin: 0; background: #0d0d0f; color: #f3f0ed; }
+    body { background: radial-gradient(ellipse at top, #38271f 0%, #141416 43%, #09090a 100%); }
+    main { max-width: 900px; margin: 0 auto; padding: 7vh 30px 54px; text-align: center; }
+    .emblem { width: min(390px, 72vw); max-height: 48vh; object-fit: contain; filter: drop-shadow(0 18px 34px #000b); }
+    .name { margin: 18px 0 4px; color: #ecad70; letter-spacing: .22em; font-size: clamp(25px, 4vw, 44px); font-weight: 800; }
+    .subtitle { color: #c9b6a5; letter-spacing: .08em; font-size: 13px; text-transform: uppercase; }
+    .card { margin: 34px auto 0; max-width: 680px; padding: 27px 30px; background: #171719dd; border: 1px solid #6b4c39; border-radius: 17px; box-shadow: 0 20px 55px #0008; }
+    h1 { font-size: 22px; margin: 0 0 16px; color: #fff5eb; }
+    p { margin: 0; color: #ddd4cc; line-height: 1.65; }
+    .details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 25px; text-align: left; }
+    .detail { border-radius: 10px; padding: 12px; background: #222226; border: 1px solid #3f3632; }
+    .label { color: #b9aaa0; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+    .value { margin-top: 5px; color: #f5e1cd; font-size: 14px; }
+    @media (max-width: 620px) { .details { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="emblem" src="SkyNetLogo.png" alt="SkyNet Browser emblem">
+    <div class="name">SKYNET</div>
+    <div class="subtitle">In-game browser for Skyrim Special Edition</div>
+    <section class="card">
+      <h1>About SkyNet</h1>
+      <p>SkyNet is a proper in-game browser powered by Chromium technology, built for browsing the web without leaving Skyrim.</p>
+      <div class="details">
+        <div class="detail"><div class="label">Version</div><div class="value">1.0.1</div></div>
+        <div class="detail"><div class="label">Developer</div><div class="value">Degdatar</div></div>
+        <div class="detail"><div class="label">Included tools</div><div class="value">SkyNet AdBlocker (uBO Lite)</div></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

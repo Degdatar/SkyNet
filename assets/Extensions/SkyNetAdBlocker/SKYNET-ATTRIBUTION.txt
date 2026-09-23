@@ -1,0 +1,12 @@
+SkyNet AdBlocker is a SkyNet-branded distribution of uBlock Origin Lite.
+
+Original project: uBlock Origin Lite
+Original author: Raymond Hill
+Source: https://github.com/uBlockOrigin/uBOL-home
+Bundled source revision: ef846e7c0496a5f6769b203ee1f57e9866a76bd3
+License: GNU General Public License, version 3 (GPL-3.0)
+
+The complete corresponding source and license are available from the source
+repository above. The unmodified GPL license text is included in LICENSE.txt.
+SkyNet-specific changes are limited to the extension display name and this
+attribution notice.

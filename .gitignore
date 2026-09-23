@@ -1,0 +1,33 @@
+# CMake and Visual Studio output
+/build/
+/out/
+/.vs/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/install_manifest.txt
+/vcpkg_installed/
+/CMakeUserPresets.json
+
+# Compiled distribution artifacts
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ipdb
+*.iobj
+
+# Required by CMake: this is the WebView2 static loader, not a build output.
+!extern/WebView2/build/native/x64/WebView2LoaderStatic.lib
+
+# Local SkyNet browser profile / optional fixed runtime
+/SkyNetRuntime/
+/SkyNetUserData/
+
+# Download caches and operating-system files
+*.nupkg
+*.user
+*.suo
+*.log
+Thumbs.db
+Desktop.ini
