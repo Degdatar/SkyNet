@@ -90,3 +90,7 @@ Skyrim installation. Launch Skyrim through SKSE.
 - Use the native `−` button to minimize SkyNet; press **F2** to restore it.
 - Browser settings include toggles for the splash screen and `Splash.mp4`
   video; the bundled video is enabled by default.
+
+## License
+
+SkyNet original code is licensed under GNU GPL v3.0 only. Third-party components retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
