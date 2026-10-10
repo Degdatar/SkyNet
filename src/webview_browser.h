@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 // Native Chromium browser host used by SkyNet.  The view is hosted in the
 // Skyrim window so remote pages are top-level documents, not iframe content.
 namespace SkyNetBrowser
@@ -7,7 +9,7 @@ namespace SkyNetBrowser
     using CloseCallback = void (*)();
 
     void SetCloseCallback(CloseCallback a_callback);
-    bool Open();
+    bool Open(const std::wstring& a_initialUrl = {}, bool a_skipSplash = false);
     void Close();
     void Restore();
     bool IsOpen();
