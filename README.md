@@ -5,7 +5,7 @@ It hosts remote pages as top-level browser documents, includes a SkyNet home pag
 and splash video, keeps bookmarks and history in the current Windows profile,
 and packages SkyNet AdBlocker (uBlock Origin Lite) alongside a native ad shield.
 
-> **Release status:** version 1.0.1 has been tested on Steam Skyrim SE/AE
+> **Release status:** version 1.1.1 has been tested on Steam Skyrim SE/AE
 > runtime **1.6.1170**. 
 
 ## Runtime requirements
