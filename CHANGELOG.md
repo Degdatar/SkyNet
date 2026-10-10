@@ -1,5 +1,8 @@
 # SkyNet Changelog
 
+## 1.1.1 — 2026-10-10
+-Added Support For SkyOS 
+
 ## 1.0.1 — 2026-09-22
 
 ### Added
