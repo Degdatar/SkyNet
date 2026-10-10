@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(
     SkyNet
-    VERSION 1.0.1
+    VERSION 1.1.1
     LANGUAGES CXX
 )
 
@@ -36,10 +36,6 @@ find_package(OpenSSL REQUIRED)
 
 # Disable CommonLib tests
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
-# SkyNet currently ships and is tested as a flat Skyrim SE/AE plugin.  Keep
-# CommonLib's VR target off so a normal clone does not require OpenVR headers.
-set(ENABLE_SKYRIM_VR OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(extern/CommonLibSSE-NG)
 
@@ -86,6 +82,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ole32
     oleaut32
     shlwapi
+    dwmapi
     gdiplus
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/WebView2/build/native/x64/WebView2LoaderStatic.lib"
 )
