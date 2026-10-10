@@ -3,6 +3,7 @@
 #include <SKSE/SKSE.h>
 
 #include <windows.h>
+#include <dwmapi.h>
 #include <shlwapi.h>
 #include <wrl.h>
 
@@ -33,6 +34,13 @@ namespace
 {
     using Microsoft::WRL::Callback;
     using Microsoft::WRL::ComPtr;
+
+    struct ExternalLaunchRequest
+    {
+        std::wstring url;
+        bool skipSplash{};
+        bool pending{};
+    };
 
     constexpr wchar_t kHostClassName[] = L"SkyNetWebView2Host";
     constexpr wchar_t kGoogleHomePage[] = L"https://www.google.com/";
@@ -183,6 +191,8 @@ namespace
     std::mutex g_startMutex;
     std::condition_variable g_startCondition;
     SkyNetBrowser::CloseCallback g_closeCallback = nullptr;
+    std::mutex g_externalLaunchMutex;
+    ExternalLaunchRequest g_externalLaunchRequest;
     std::vector<Bookmark> g_bookmarks;
     std::vector<HistoryEntry> g_history;
     std::vector<Shortcut> g_shortcuts(5);
@@ -200,6 +210,7 @@ namespace
     void LayoutControls();
     void NavigateFromAddressBar();
     void NavigateTo(const std::wstring& a_target);
+    bool ApplyExternalLaunchRequest();
     std::wstring NormalizeAddress(const std::wstring& a_address);
     void ShowHomePage();
     void CreateNewTab();
@@ -1935,6 +1946,7 @@ function details(i){expanded=expanded===i?null:i;render()}function toggle(i){con
             g_controller->put_IsVisible(TRUE);
             g_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
         }
+        ApplyExternalLaunchRequest();
     }
 
     void MinimizeBrowserWindow()
@@ -1994,6 +2006,7 @@ function details(i){expanded=expanded===i?null:i;render()}function toggle(i){con
 
         if (g_browserMinimized) {
             RestoreBrowserWindow();
+            ApplyExternalLaunchRequest();
             return;
         }
 
@@ -2008,14 +2021,19 @@ function details(i){expanded=expanded===i?null:i;render()}function toggle(i){con
             g_controller->put_IsVisible(TRUE);
             g_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
 
-            // Replay the configured splash on every fresh open. Minimize and
-            // F2 restore remain instant and do not restart playback.
+            // External SkyOS requests choose their own destination/splash.
+            // Normal SkyNet opens keep the existing startup behavior.
+            const auto hasExternalLaunch = ApplyExternalLaunchRequest();
             if (!wasOpen) {
-                const auto startedVideoSplash = StartConfiguredVideoSplash();
-                g_showSplash = startedVideoSplash;
-                if (!startedVideoSplash && g_statusLabel) {
-                    ShowWindow(g_statusLabel, SW_HIDE);
+                if (!hasExternalLaunch) {
+                    const auto startedVideoSplash = StartConfiguredVideoSplash();
+                    g_showSplash = startedVideoSplash;
+                    if (!startedVideoSplash && g_statusLabel) {
+                        ShowWindow(g_statusLabel, SW_HIDE);
+                    }
                 }
+            }
+            if (!wasOpen || hasExternalLaunch) {
                 InvalidateRect(hostWindow, nullptr, TRUE);
             }
         }
@@ -2065,6 +2083,41 @@ function details(i){expanded=expanded===i?null:i;render()}function toggle(i){con
         g_videoSplashPlaying = true;
         if (g_statusLabel) {
             ShowWindow(g_statusLabel, SW_HIDE);
+        }
+        return true;
+    }
+
+    bool ApplyExternalLaunchRequest()
+    {
+        if (!g_webView) {
+            return false;
+        }
+
+        ExternalLaunchRequest request;
+        {
+            std::lock_guard lock(g_externalLaunchMutex);
+            if (!g_externalLaunchRequest.pending) {
+                return false;
+            }
+            request = std::move(g_externalLaunchRequest);
+            g_externalLaunchRequest = {};
+        }
+
+        if (request.skipSplash) {
+            g_showSplash = false;
+            g_videoSplashPlaying = false;
+        } else if (StartConfiguredVideoSplash()) {
+            g_showSplash = true;
+            return true;
+        }
+
+        if (g_statusLabel) {
+            ShowWindow(g_statusLabel, SW_HIDE);
+        }
+        if (!request.url.empty()) {
+            NavigateTo(request.url);
+        } else {
+            ShowHomePage();
         }
         return true;
     }
@@ -2732,17 +2785,18 @@ function details(i){expanded=expanded===i?null:i;render()}function toggle(i){con
 
                     LayoutControls();
                     g_controller->put_IsVisible(g_isOpen.load() ? TRUE : FALSE);
-                    const auto startedVideoSplash = StartConfiguredVideoSplash();
-                    g_showSplash = startedVideoSplash;
-                    if (!startedVideoSplash) {
-                        ShowWindow(g_statusLabel, SW_HIDE);
+                    const auto hasExternalLaunch = ApplyExternalLaunchRequest();
+                    const auto startedVideoSplash = hasExternalLaunch ? g_videoSplashPlaying : StartConfiguredVideoSplash();
+                    if (!hasExternalLaunch) {
+                        g_showSplash = startedVideoSplash;
+                        if (!startedVideoSplash) {
+                            ShowWindow(g_statusLabel, SW_HIDE);
+                            ShowHomePage();
+                        }
                     }
                     InvalidateRect(g_hostWindow.load(), nullptr, TRUE);
 
                     const auto navigateResult = startedVideoSplash ? S_OK : S_OK;
-                    if (!startedVideoSplash) {
-                        ShowHomePage();
-                    }
                     if (FAILED(navigateResult)) {
                         LogWebViewError("initial navigation", navigateResult);
                         SetBrowserStatus(L"SkyNet home page could not start. Check SkyNet.log.");
@@ -2875,6 +2929,8 @@ function details(i){expanded=expanded===i?null:i;render()}function toggle(i){con
             return;
         }
 
+        const COLORREF borderColor = RGB(20, 19, 21);
+        DwmSetWindowAttribute(hostWindow, DWMWA_BORDER_COLOR, &borderColor, sizeof(borderColor));
         g_hostWindow.store(hostWindow);
         LoadBrowserSettings();
         LoadBrowserData();
@@ -2930,8 +2986,12 @@ namespace SkyNetBrowser
         g_closeCallback = a_callback;
     }
 
-    bool Open()
+    bool Open(const std::wstring& a_initialUrl, bool a_skipSplash)
     {
+        {
+            std::lock_guard lock(g_externalLaunchMutex);
+            g_externalLaunchRequest = { a_initialUrl, a_skipSplash, true };
+        }
         g_isOpen.store(true);
         if (!StartBrowserThread()) {
             g_isOpen.store(false);
@@ -2995,4 +3055,17 @@ namespace SkyNetBrowser
     {
         return g_splashVideoEnabled.load();
     }
+}
+
+// Optional runtime bridge used by SkyOS. Existing SkyNet launch routes remain
+// unchanged; the exports are harmless when SkyOS is not installed.
+extern "C" __declspec(dllexport) BOOL WINAPI SkyNet_SkyOS_Open(LPCWSTR a_url, BOOL a_skipSplash)
+{
+    return SkyNetBrowser::Open(a_url ? a_url : L"", a_skipSplash != FALSE) ? TRUE : FALSE;
+}
+
+extern "C" __declspec(dllexport) BOOL WINAPI SkyNet_SkyOS_SetSplashEnabled(BOOL a_enabled)
+{
+    SkyNetBrowser::SetSplashEnabled(a_enabled != FALSE);
+    return TRUE;
 }
